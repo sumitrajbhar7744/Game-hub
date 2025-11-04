@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Snake</title>
+<style>
+  body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#222}
+  canvas{background:#fff;border-radius:8px}
+  #info{position:fixed;top:8px;left:8px;color:#fff;font-family:sans-serif}
+</style>
+</head>
+<body>
+<div id="info">Swipe to control. Score: <span id="s">0</span></div>
+<canvas id="c" width="300" height="300"></canvas>
+<script>
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+const size=15;
+let cols = Math.floor(c.width/size), rows = Math.floor(c.height/size);
+let snake=[{x:5,y:5}];
+let dir={x:1,y:0};
+let food = {x:10,y:10};
+let score=0;
+document.getElementById('s').innerText=score;
+
+function placeFood(){
+  food = {x: Math.floor(Math.random()*cols), y: Math.floor(Math.random()*rows)};
+}
+function draw(){
+  ctx.clearRect(0,0,c.width,c.height);
+  // draw food
+  ctx.fillStyle='red';
+  ctx.fillRect(food.x*size,food.y*size,size,size);
+  // draw snake
+  ctx.fillStyle='green';
+  snake.forEach(s=> ctx.fillRect(s.x*size,s.y*size,size-1,size-1));
+}
+function step(){
+  let head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+  if(head.x<0||head.x>=cols||head.y<0||head.y>=rows || snake.some(s=>s.x===head.x && s.y===head.y)){
+    alert('Game Over. Score: '+score);
+    snake=[{x:5,y:5}]; dir={x:1,y:0}; score=0; document.getElementById('s').innerText=score; placeFood(); return;
+  }
+  snake.unshift(head);
+  if(head.x===food.x && head.y===food.y){
+    score++; document.getElementById('s').innerText=score; placeFood();
+  } else snake.pop();
+  draw();
+}
+setInterval(step,120);
+
+// simple touch swipe
+let startX, startY;
+c.addEventListener('touchstart',e=>{ let t=e.touches[0]; startX=t.clientX; startY=t.clientY;});
+c.addEventListener('touchend',e=>{
+  let t=e.changedTouches[0]; let dx = t.clientX - startX, dy = t.clientY - startY;
+  if(Math.abs(dx)>Math.abs(dy)){
+    if(dx>0) dir={x:1,y:0}; else dir={x:-1,y:0};
+  } else {
+    if(dy>0) dir={x:0,y:1}; else dir={x:0,y:-1};
+  }
+});
+</script>
+</body>
+</html>
