@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flappy Mini</title>
+<style>body{margin:0;background:#87CEEB;display:flex;align-items:center;justify-content:center;height:100vh}canvas{background:transparent;border-radius:8px}</style>
+</head>
+<body>
+<canvas id="g" width="320" height="480"></canvas>
+<script>
+const canvas=document.getElementById('g'), ctx=canvas.getContext('2d');
+let y=240, vel=0, gravity=0.7;
+let pipes=[], frame=0, score=0;
+function spawnPipe(){ let gap=110; let top = Math.random()*(canvas.height-200)+40; pipes.push({x:canvas.width, top:top}); }
+function step(){
+  frame++;
+  if(frame%90===0) spawnPipe();
+  vel+=gravity; y+=vel;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // draw bird
+  ctx.fillStyle='yellow'; ctx.fillRect(60,y-12,24,24);
+  // pipes
+  ctx.fillStyle='green';
+  for(let p of pipes){ p.x -= 2; ctx.fillRect(p.x,0,40,p.top); ctx.fillRect(p.x,p.top+110,40,canvas.height); if(!p.scored && p.x+40<60){score++; p.scored=true;} }
+  // collision
+  for(let p of pipes){ if(60 < p.x+40 && 60+24 > p.x && (y-12 < p.top || y+12 > p.top+110)) { gameOver(); return; } }
+  if(y>canvas.height || y<0) { gameOver(); return; }
+  // draw score
+  ctx.fillStyle='white'; ctx.font='24px sans-serif'; ctx.fillText('Score: '+score,10,30);
+  requestAnimationFrame(step);
+}
+function gameOver(){ alert('Game Over. Score: '+score); pipes=[]; y=240; vel=0; score=0; frame=0;}
+canvas.addEventListener('touchstart', ()=> vel = -8 );
+canvas.addEventListener('mousedown', ()=> vel = -8 );
+step();
+</script>
+</body>
+</html>
