@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brick Breaker</title>
+<style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#111}canvas{background:#222;border-radius:6px}</style>
+</head>
+<body>
+<canvas id="b" width="320" height="480"></canvas>
+<script>
+const canvas=document.getElementById('b'), ctx=canvas.getContext('2d');
+let paddle={w:60,h:10,x:130}, ball={x:160,y:300,dx:3,dy:-3,r:6};
+let bricks=[]; let rows=4,cols=6;
+for(let i=0;i<rows;i++){ for(let j=0;j<cols;j++){ bricks.push({x: j*50+15, y:i*20+40, w:40,h:12,alive:true}); } }
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // bricks
+  ctx.fillStyle='orange';
+  bricks.forEach(b=>{ if(b.alive) ctx.fillRect(b.x,b.y,b.w,b.h); });
+  // paddle
+  ctx.fillStyle='white'; ctx.fillRect(paddle.x, canvas.height-30, paddle.w, paddle.h);
+  // ball
+  ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
+}
+function step(){
+  ball.x += ball.dx; ball.y += ball.dy;
+  if(ball.x<ball.r || ball.x>canvas.width-ball.r) ball.dx *= -1;
+  if(ball.y<ball.r) ball.dy *= -1;
+  if(ball.y > canvas.height - 30 && ball.x > paddle.x && ball.x < paddle.x + paddle.w) ball.dy *= -1;
+  if(ball.y > canvas.height) { alert('Game Over'); reset(); return; }
+  // brick collision
+  for(let b of bricks){
+    if(b.alive && ball.x > b.x && ball.x < b.x+b.w && ball.y - ball.r < b.y + b.h && ball.y + ball.r > b.y){
+      b.alive=false; ball.dy *= -1;
+    }
+  }
+  draw();
+  requestAnimationFrame(step);
+}
+function reset(){ ball={x:160,y:300,dx:3,dy:-3,r:6}; bricks.forEach(b=>b.alive=true); }
+canvas.addEventListener('touchmove', e=>{ let t=e.touches[0]; let rect=canvas.getBoundingClientRect(); paddle.x = t.clientX - rect.left - paddle.w/2; });
+canvas.addEventListener('mousemove', e=>{ let rect=canvas.getBoundingClientRect(); paddle.x = e.clientX - rect.left - paddle.w/2; });
+step();
+</script>
+</body>
+</html>
